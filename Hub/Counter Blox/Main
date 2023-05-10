@@ -1,0 +1,64 @@
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/CatalystWinning/CatalystHub/main/Hub/Counter%20Blox/UI%20Library"))()
+local Window = Library:CreateWindow("Catalyst", Vector2.new(492, 598), Enum.KeyCode.Insert)
+
+local LegitTab = Window:CreateTab("Legit")
+local LegitMain = LegitTab:CreateSector("Main", "left")
+
+local ConfigTab = Window:CreateTab("Config")
+
+-->>: Variables
+
+local Players = game.Players
+local LocalPlayer = Players.LocalPlayer
+
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local Mouse = LocalPlayer:GetMouse()
+local mousemoverel = mousemoverel()
+
+-->>: Functions
+
+function NearestPartToMouse()
+    local Viewport = workspace.CurrentCamera.ViewportSize
+    local Target, Part, MaxDistance = nil, nil, math.huge
+    if Mouse.Target and Mouse.Target.Parent then 
+        if Mouse.Target.Parent:FindFirstChild("Humanoid") and Mouse.Target.Parent.Humanoid.Health ~= 0 then
+            if game.Players:FindFirstChild(Mouse.Target.Parent.Name) and Mouse.Target.Name ~= "Gun" then
+                local TargetPosition = Mouse.Target.Position
+                local ScreenPosition = workspace.CurrentCamera:WorldToViewportPoint(TargetPosition)
+                if ScreenPosition.Z > 0 and ScreenPosition.X > 0 and ScreenPosition.X < Viewport.X and ScreenPosition.Y > 0 and ScreenPosition.Y < Viewport.Y then
+                    local Distance = (Mouse.X - ScreenPosition.X)^2 + (Mouse.Y - ScreenPosition.Y)^2
+                    if Distance < MaxDistance then
+                        MaxDistance = Distance
+                        Target = Mouse.Target.Parent
+                        Part = Mouse.Target
+                    end
+                end
+            end
+        end
+    end
+    return Target, Part
+end
+
+LegitMain:AddToggle("Aimbot", false, function(Value)
+    local SelectedPart = Instance.new("SelectionBox", game.Workspace)
+    SelectedPart.Color3 = Color3.new(1, 0, 0)
+	if Value == true then
+		AimbotLoop = RunService.RenderStepped:Connect(function()
+            local Target, Part = NearestPartToMouse()
+            if Target and Part then
+                print("Target:", Target.Name)
+                print("Part:", Part.Name)
+                SelectedPart.Adornee = Mouse.Target
+            else
+                print("No valid target found.")
+                SelectedPart.Adornee = nil
+            end
+		end)
+	elseif Value == false and AimbotLoop then
+		AimbotLoop:Disconnect()
+	end
+end)
+
+ConfigTab:CreateConfigSystem("right")
